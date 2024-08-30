@@ -1,4 +1,6 @@
 {
 		"quit_commands": ["exit", "quit", "stop", "q"],
-		"prefix": "> "
+		"prefix": "> ",
+		"single_char_arg": "-",
+		"multi_char_arg": "--"
 }

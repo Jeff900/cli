@@ -3,7 +3,8 @@ configured per application. The shell on itself listen to input, creates a
 dictionary with commands and arguments and passes it to the application.
 """
 
-import re, json
+import re
+import json
 
 
 __version__ = '0.0.3'
@@ -35,28 +36,51 @@ class Settings:
             print('Can\'t find self.data')
 
 
+class Args:
+    """This class handles arguments given with the prompt handled by the Prompt
+    class.
+    """
+
+    def __init__(self, settings, args):
+        self.args = args
+        self.pos_args = []
+        self.kw_args = {}
+
+    def init_args(self):
+        """Loop over al args, get positional first, then handle flags.
+        """
+        pos_arg = True
+        for arg in self.args:
+            if arg.startswith(settings.data['multi_char_arg']):
+                # assume double-dashed arg
+                pos_arg = False
+            elif arg.startswith(settings.data['single_char_arg']):
+                # assume single-dashed arg
+                pos_arg = False
+            elif pos_arg is True:
+                # assume positional arg
+                self.pos_args.append(arg)
+
+
 class Prompt:
     """Prompt class handles the input. It extracts all parts from the actual
     command up to the flags with its arguments.
     """
 
-    def __init__(self, prefix='> '):
-        self.prefix = prefix
-        # self.input_cleaned = Prompt.clean_prompt(i)
-        # self.input_parsed = self.parse_prompt()
-        # self.command = self.input_parsed[0]
-        # self.parse_arguments()
+    def __init__(self, settings):
+        self.prefix = settings.data['prefix']
+        self.args = Args()
 
     def clean_prompt(self, i):
         """Clean prompt from trailing and duplicate spaces.
         Returns String"""
         c = " ".join(re.split("\s+", i, flags=re.UNICODE)).strip()
-        self.input_cleaned = c
+        return c
 
     def parse_prompt(self, input_cleaned):
         """Split cleaned input on spaces.
         Returns a List."""
-        self.input_parsed = self.input_cleaned.split(' ')
+        return input_cleaned.split(' ')
 
     def parse_arguments(self, input_parsed):
         """Loops over all items in parsed prompt but ignores first. On flag
@@ -64,22 +88,18 @@ class Prompt:
         will be added as values. Until a new flag is found etc.
         Returns Dictionary
         """
-        self.args = dict()
-        for arg in self.input_parsed[1:]:
+        args = {}
+        for arg in input_parsed[1:]:
             if arg.startswith('--'):
                 current_arg = arg
-                self.args[arg] = []
+                args[arg] = []
             else:
-                self.args[current_arg].append(arg)
-        self.args
+                args[current_arg].append(arg)
+        return args
 
-    def run(self, func):
+    def run(self, settings):
         """Runs main program until stop command is entered.
         """
-        try:
-            settings = Settings()
-        except:
-            pass
         while True:
             i = input(self.prefix)
             if i.lower().strip() in settings.data['quit_commands']:
@@ -87,5 +107,16 @@ class Prompt:
             else:
                 input_cleaned = self.clean_prompt(i)
                 input_parsed = self.parse_prompt(input_cleaned)
-                args = self.parse_arguments(input_parsed)
-                func(self)
+                command = input_parsed[0]
+                args = self.parse_arguments(settings, input_parsed)
+                print(args)
+                # func(self)
+
+if __name__ == '__main__':
+    try:
+        settings = Settings()
+    except Exception as exc:
+        print(exc)
+
+    prompt = Prompt(settings)
+    prompt.run(settings)
