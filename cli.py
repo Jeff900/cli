@@ -1,7 +1,38 @@
-import re
+"""This module aims to provide a shell for python applications, which can be
+configured per application. The shell on itself listen to input, creates a
+dictionary with commands and arguments and passes it to the application.
+"""
+
+import re, json
 
 
-__version__ = '0.0.2'
+__version__ = '0.0.3'
+
+
+class Settings:
+    """Gets settings from cli.json. See README file for explanation per
+    setting. Sets settings to a dictionary.
+    """
+
+    def __init__(self, path='./cli.json'):
+        self.path = path
+        self.data = self.read_json()
+
+    def read_json(self):
+        """Reads json data.
+        """
+        with open(self.path, 'r') as f:
+            data = json.load(f)
+        return data
+
+    def print_settings(self):
+        """For testing purposes and checking settings.
+        """
+        if self.data:
+            for key, value in self.data.items():
+                print(key, '-', value)
+        else:
+            print('Can\'t find self.data')
 
 
 class Prompt:
@@ -43,9 +74,15 @@ class Prompt:
         self.args
 
     def run(self, func):
+        """Runs main program until stop command is entered.
+        """
+        try:
+            settings = Settings()
+        except:
+            pass
         while True:
             i = input(self.prefix)
-            if i.lower().strip() in ['exit', 'quit', 'stop', 'q']:
+            if i.lower().strip() in settings.data['quit_commands']:
                 break
             else:
                 input_cleaned = self.clean_prompt(i)
