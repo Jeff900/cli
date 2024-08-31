@@ -42,7 +42,9 @@ class Args:
     """
 
     def __init__(self, settings, args):
+        self.settings = settings
         self.args = args
+        self.command = ''
         self.pos_args = []
         self.kw_args = {}
 
@@ -50,16 +52,32 @@ class Args:
         """Loop over al args, get positional first, then handle flags.
         """
         pos_arg = True
-        for arg in self.args:
-            if arg.startswith(settings.data['multi_char_arg']):
-                # assume double-dashed arg
+        for i, arg in enumerate(self.args):
+            if i == 0:
+                self.command = arg
+            elif arg.startswith(self.settings.data['multi_char_arg']):
+                self.kw_args.update(self.parse_kw_arg(i))
                 pos_arg = False
-            elif arg.startswith(settings.data['single_char_arg']):
-                # assume single-dashed arg
+            elif arg.startswith(self.settings.data['single_char_arg']):
+                self.kw_args.update(self.parse_kw_arg(i))
                 pos_arg = False
             elif pos_arg is True:
-                # assume positional arg
                 self.pos_args.append(arg)
+
+    def parse_kw_arg(self, pos):
+        """Creates a dict where the key item is the flag char(s) and the
+        value the optional argument for that flag. If no argument is used,
+        it's None.
+        """
+        # flag = [self.args[pos]]
+        flag = {self.args[pos]: None}
+        if not self.args[pos+1].startswith(self.settings.data['single_char_arg']):
+            pass
+        else:
+            flag[self.args[pos]] = self.args[pos+1]
+        print(flag)
+        return flag
+
 
 
 class Prompt:
