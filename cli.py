@@ -75,7 +75,6 @@ class Args:
             pass
         else:
             flag[self.args[pos]] = self.args[pos+1]
-        print(flag)
         return flag
 
 
