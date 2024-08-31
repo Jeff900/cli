@@ -70,11 +70,13 @@ class Args:
         it's None.
         """
         # flag = [self.args[pos]]
-        flag = {self.args[pos]: None}
-        if not self.args[pos+1].startswith(self.settings.data['single_char_arg']):
-            pass
+        if pos < len(self.args)-1:
+            if not self.args[pos+1].startswith(self.settings.data['single_char_arg']):
+                flag = {self.args[pos]: self.args[pos+1]}
+            else:
+                flag = {self.args[pos]: None}
         else:
-            flag[self.args[pos]] = self.args[pos+1]
+            flag = {self.args[pos]: None}
         return flag
 
 
